@@ -23,6 +23,7 @@
 
         navigator.mediaDevices.getUserMedia(constraints).then(stream => {
             console.log(`get ${ JSON.stringify(constraints) } ok`);
+
             let audioCtx = new(window.AudioContext || window.webkitAudioContext)();
             if (isIOS()) {
                 // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/Using_HTML5_Audio_Video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html
@@ -46,13 +47,14 @@
             scriptNode.connect(audioCtx.destination);
 
             scriptNode.onaudioprocess = audioProcessingEvent => {
-                let inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
+                let factor = 1000;
+                let inputData = audioProcessingEvent.inputBuffer.getChannelData(0);                
                 let v = inputData.reduce((a, b) => {
                     return a + b
                 });
-
+                
                 if (v > 0) {
-                    $("#v").text(Math.round(v * 100));
+                    $("#v").text(Math.round(v * factor));
                 }
             };
         }).catch(err => {
