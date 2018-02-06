@@ -24,26 +24,24 @@
         navigator.mediaDevices.getUserMedia(constraints).then(stream => {
             console.log(`get ${ JSON.stringify(constraints) } ok`);
             let audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-            if (isIOS) {
+            if (isIOS()) {
                 // https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/Using_HTML5_Audio_Video/PlayingandSynthesizingSounds/PlayingandSynthesizingSounds.html
                 // Note: On iOS, the Web Audio API requires sounds to be triggered from an explicit user action, such as a tap.
                 // so first suspend the audio content, and then add a event listener
                 audioCtx.suspend().then(function () {
-                    console.log("suspend");
+                    console.log("init suspended when ios");
                 });
 
                 document.addEventListener('touchend', function () {
                     if (this.state === 'running') {} else {
-                        this.resume().then(function () {
-                            console.log("resume");
-                        });
+                        this.resume().then(() => console.log("resume"));
                     }
                 }.bind(audioCtx));
             }
 
             // define the audio routing graph
             let source = audioCtx.createMediaStreamSource(stream);
-            let scriptNode = audioCtx.createScriptProcessor(512, 1, 1);
+            let scriptNode = audioCtx.createScriptProcessor(0, 1, 1);
             source.connect(scriptNode);
             scriptNode.connect(audioCtx.destination);
 
@@ -53,7 +51,9 @@
                     return a + b
                 });
 
-                $("#v").text(v);
+                if (v > 0) {
+                    $("#v").text(Math.round(v * 100));
+                }
             };
         }).catch(err => {
             console.log(err);
