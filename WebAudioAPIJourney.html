@@ -2,17 +2,40 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 </head>
 
 <body>
 
 
-    <span id="v"></span>
-
+    <div class="container">
+        <canvas id="chart" style="width:100%; height:200px"></canvas>
+    </div>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/smoothie/1.34.0/smoothie.min.js"></script>
     <script>
+        // Create a time series
+        var series = new TimeSeries();
+
+        // init the canvas with the time series
+        (function (canvas) {
+            // Find the canvas
+            var canvas = canvas;
+
+            // Create the chart
+            var chart = new SmoothieChart({
+                responsive: true
+            });
+            chart.addTimeSeries(series, {
+                strokeStyle: 'rgba(0, 255, 0, 1)'
+            });
+            chart.streamTo(canvas);
+        })($('#chart')[0]);
+
         function isIOS() {
             return /iphone|ipad/i.test(navigator.userAgent);
         }
@@ -48,14 +71,13 @@
 
             scriptNode.onaudioprocess = audioProcessingEvent => {
                 let factor = 1000;
-                let inputData = audioProcessingEvent.inputBuffer.getChannelData(0);                
+                let inputData = audioProcessingEvent.inputBuffer.getChannelData(0);
                 let v = inputData.reduce((a, b) => {
                     return a + b
                 });
-                
-                if (v > 0) {
-                    $("#v").text(Math.round(v * factor));
-                }
+
+                v = Math.round(v * factor);
+                series.append(Date.now(), v);
             };
         }).catch(err => {
             console.log(err);
